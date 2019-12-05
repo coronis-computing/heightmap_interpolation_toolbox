@@ -10,6 +10,7 @@ classdef Variogram
         hExp; % Experimental h values
         gammaExp; % Experimental gamma values
         optimNugget;
+        distType; % The distance type used to fit the experimental variogram
     end
     
     methods
@@ -37,9 +38,10 @@ classdef Variogram
             parse(p, varargin{:});
             
             obj.optimNugget = p.Results.OptimNugget;
+            obj.distType = p.Results.DistanceType;
             
             % Compute the experimental variogram
-            [obj.hExp, obj.gammaExp] = Variogram.experimentalVariogram(x, y, z, p.Results.NumBins);
+            [obj.hExp, obj.gammaExp] = Variogram.experimentalVariogram(x, y, z, p.Results.NumBins, obj.distType);
             
             % Fit the variogram function to the experimental variogram
             obj = obj.fitModel(p.Results.Model, [p.Results.InitialA, p.Results.InitialC1, p.Results.InitialC0]);
@@ -47,6 +49,9 @@ classdef Variogram
         
         function val = eval(obj, h)
             %Value of the variogram at a given distance
+            % Note: the distance 'h' is expected to be computed using the
+            % same distance function as used in the Variogram creation (see
+            % 'DistanceType' parameter of the constructor)
             val = obj.variogramFun(h, [obj.a, obj.c1, obj.c0]);
         end
         
@@ -87,13 +92,9 @@ classdef Variogram
                 ub(3) = 0;
             end
             
-            
-            
             % Fit the variogram model
-            options = optimset('MaxFunEvals', 10000000);
-            
+            options = optimset('MaxFunEvals', 10000000);            
             objectiveFun = @(b) sum((obj.variogramFun(obj.hExp, b)-obj.gammaExp).^2);
-            
             
             % Minimize
             [b, fval, exitflag, output] = fminsearchbnd(objectiveFun, initialGuess, lb, ub, options);
@@ -113,11 +114,17 @@ classdef Variogram
     end
     
     methods (Static)
-        function [h, g] = experimentalVariogram(x, y, z, numBins)
+        function [h, g] = experimentalVariogram(x, y, z, numBins, distType)
             %% Computes the experimental ISOTROPIC variogram for a given set of points (x, y) and observations (z)
             
             % Compute all-against-all sample distances
-            dists = pdist([x y]);
+            if strcmpi(distType, 'euclidean')
+                dists = pdist([x y]);
+            elseif strcmpi(distType, 'haversine') 
+                dists = pdist([x y], @haversine);
+            else
+                error('Unknown distance type');
+            end
             
             % Compute the gamma (a bit hacky, we use the gamma function as
             % a distance inside pdist for speed...)
