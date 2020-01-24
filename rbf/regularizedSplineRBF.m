@@ -18,6 +18,5 @@ Ce = 0.5772156649015328606065120900824; % Value of the euler constant. To get it
 r(r==0) = 1e-15; % Singularity at r == 0
 fx = (1/2*pi) * ( (r.*r./4).*(log(r/2*e)+Ce-1) + e*e*(besselk(0, r/e)+Ce+log(r/2*pi)) );
 
-
 end
 
