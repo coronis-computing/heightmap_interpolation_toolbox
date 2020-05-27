@@ -28,7 +28,7 @@ switch lower(dataId)
         % this case)
         zt = []; 
         % Create the options structure
-        demoOptions.DistanceType = 'haversine'; % Because x/y are in lat/lon! Would work also with Euclidean distance, but this is more correct...        
+        demoOptions.DistanceType = 'euclidean'; % Because x/y are in lat/lon! Would work also with Euclidean distance, but this is more correct...        
         % --> IDW
         demoOptions.IDW.Radius = 5;
         demoOptions.IDW.SearchType = 'radial';
@@ -38,65 +38,57 @@ switch lower(dataId)
         demoOptions.RBF.RBF = 'thinplate';
         %   --> Linear
         demoOptions.RBF.linear.PolynomialDegree = 1;        
-        demoOptions.RBF.linear.RBFEpsilon = 1;
-        demoOptions.RBF.linear.Smooth = 0;
-        demoOptions.RBF.linear.Regularization = 0;
         %   --> Cubic
         demoOptions.RBF.cubic.PolynomialDegree = 1;        
-        demoOptions.RBF.cubic.RBFEpsilon = 1;
-        demoOptions.RBF.cubic.Smooth = 0;
-        demoOptions.RBF.cubic.Regularization = 0;
         %   --> Quintic
         demoOptions.RBF.quintic.PolynomialDegree = 1;        
-        demoOptions.RBF.quintic.RBFEpsilon = 1;
-        demoOptions.RBF.quintic.Smooth = 0;
-        demoOptions.RBF.quintic.Regularization = 0;
         %   --> Multiquadric
         demoOptions.RBF.multiquadric.PolynomialDegree = 1;        
         demoOptions.RBF.multiquadric.RBFEpsilon = 1;
-        demoOptions.RBF.multiquadric.Smooth = 0;
         demoOptions.RBF.multiquadric.Regularization = 0;
         %   --> Inverse Multiquadric
         demoOptions.RBF.inversemultiquadric.PolynomialDegree = 1;        
         demoOptions.RBF.inversemultiquadric.RBFEpsilon = 1;
-        demoOptions.RBF.inversemultiquadric.Smooth = 0;
         demoOptions.RBF.inversemultiquadric.Regularization = 0;
         %   --> Thin Plate Spline
         demoOptions.RBF.thinplate.PolynomialDegree = 1;        
         demoOptions.RBF.thinplate.RBFEpsilon = 1;
-        demoOptions.RBF.thinplate.Smooth = 0;
         demoOptions.RBF.thinplate.Regularization = 0;
         %   --> Green
         demoOptions.RBF.green.PolynomialDegree = 1;        
         demoOptions.RBF.green.RBFEpsilon = 1;
-        demoOptions.RBF.green.Smooth = 0;
         demoOptions.RBF.green.Regularization = 0;
+        %   --> Green with tension
+        demoOptions.RBF.greenwithtension.PolynomialDegree = 1;        
+        demoOptions.RBF.greenwithtension.RBFEpsilon = 0.3;
+        demoOptions.RBF.greenwithtension.RBFEpsilonIsNormalized = true;
+        demoOptions.RBF.greenwithtension.Regularization = 0;
+        %   --> Green regularized with tension
+        demoOptions.RBF.greenregularizedwithtension.PolynomialDegree = 1;        
+        demoOptions.RBF.greenregularizedwithtension.RBFEpsilon = 0.3;
+        demoOptions.RBF.greenregularizedwithtension.RBFEpsilonIsNormalized = true;
+        demoOptions.RBF.greenregularizedwithtension.Regularization = 0;
         %   --> Spline with tension
         demoOptions.RBF.tensionspline.PolynomialDegree = 1;        
         demoOptions.RBF.tensionspline.RBFEpsilon = 1;
-        demoOptions.RBF.tensionspline.Smooth = 0;
         demoOptions.RBF.tensionspline.Regularization = 0;
         %   --> Regularized Spline
         demoOptions.RBF.regularizedspline.PolynomialDegree = 0;        
         demoOptions.RBF.regularizedspline.RBFEpsilon = 1;
-        demoOptions.RBF.regularizedspline.Smooth = 0;
         demoOptions.RBF.regularizedspline.Regularization = 0;        
         %   --> Gaussian
         demoOptions.RBF.gaussian.PolynomialDegree = 0;        
         demoOptions.RBF.gaussian.RBFEpsilon = 0.1;
-        demoOptions.RBF.gaussian.Smooth = 0;
         demoOptions.RBF.gaussian.Regularization = 1e-15;
         %   --> Wendland
         demoOptions.RBF.wendland.PolynomialDegree = 1;        
         demoOptions.RBF.wendland.RBFEpsilon = 1;
-        demoOptions.RBF.wendland.Smooth = 0;
         demoOptions.RBF.wendland.Regularization = 0;
         % --> Kriging
         demoOptions.Kriging.Variogram.Type = 'gaussian';
         demoOptions.Kriging.Variogram.NumSamples = 100;
         demoOptions.Kriging.Variogram.OptimNugget = true;
         demoOptions.Kriging.PolynomialDegree = 0; % i.e., Ordinary Kriging
-        demoOptions.Kriging.Smooth = 0;
         demoOptions.Kriging.Regularization = 0;
         % --> QuadTreePURBF
         demoOptions.PURBF.Domain = [210.8 -48.5 1 0.6000];
@@ -114,7 +106,7 @@ switch lower(dataId)
         demoOptions.Plot.AxisEqual = false;
     case 'peaks'
         % Create 100 samples of Matlab's 'peaks' function
-        numSamples = 1000;
+        numSamples = 100;
         a = -3;
         b = 3;
         samples = (b-a).*rand(numSamples, 2) + a;
@@ -135,64 +127,62 @@ switch lower(dataId)
         %   --> Linear
         demoOptions.RBF.linear.PolynomialDegree = 1;        
         demoOptions.RBF.linear.RBFEpsilon = 1;
-        demoOptions.RBF.linear.Smooth = 0;
         demoOptions.RBF.linear.Regularization = 0;
         %   --> Cubic
         demoOptions.RBF.cubic.PolynomialDegree = 1;        
         demoOptions.RBF.cubic.RBFEpsilon = 1;
-        demoOptions.RBF.cubic.Smooth = 0;
         demoOptions.RBF.cubic.Regularization = 0;
         %   --> Quintic
         demoOptions.RBF.quintic.PolynomialDegree = 1;        
         demoOptions.RBF.quintic.RBFEpsilon = 1;
-        demoOptions.RBF.quintic.Smooth = 0;
         demoOptions.RBF.quintic.Regularization = 0;
         %   --> Multiquadric
         demoOptions.RBF.multiquadric.PolynomialDegree = 1;        
         demoOptions.RBF.multiquadric.RBFEpsilon = 1;
-        demoOptions.RBF.multiquadric.Smooth = 0;
         demoOptions.RBF.multiquadric.Regularization = 0;
         %   --> Inverse Multiquadric
         demoOptions.RBF.inversemultiquadric.PolynomialDegree = 1;        
         demoOptions.RBF.inversemultiquadric.RBFEpsilon = 1;
-        demoOptions.RBF.inversemultiquadric.Smooth = 0;
         demoOptions.RBF.inversemultiquadric.Regularization = 0;
         %   --> Thin Plate Spline
         demoOptions.RBF.thinplate.PolynomialDegree = 1;        
         demoOptions.RBF.thinplate.RBFEpsilon = 1;
-        demoOptions.RBF.thinplate.Smooth = 0;
         demoOptions.RBF.thinplate.Regularization = 0;
         %   --> Green
         demoOptions.RBF.green.PolynomialDegree = 1;        
         demoOptions.RBF.green.RBFEpsilon = 1;
-        demoOptions.RBF.green.Smooth = 0;
         demoOptions.RBF.green.Regularization = 0;
+        %   --> Green with tension
+        demoOptions.RBF.greenwithtension.PolynomialDegree = 1;        
+        demoOptions.RBF.greenwithtension.RBFEpsilon = 0.3;
+        demoOptions.RBF.greenwithtension.RBFEpsilonIsNormalized = true;
+        demoOptions.RBF.greenwithtension.Regularization = 0;        
+        %   --> Green regularized with tension
+        demoOptions.RBF.greenregularizedwithtension.PolynomialDegree = 1;        
+        demoOptions.RBF.greenregularizedwithtension.RBFEpsilon = 0.3;
+        demoOptions.RBF.greenregularizedwithtension.RBFEpsilonIsNormalized = true;
+        demoOptions.RBF.greenregularizedwithtension.Regularization = 0;
         %   --> Spline with tension
-        demoOptions.RBF.tensionspline.PolynomialDegree = 1;        
-        demoOptions.RBF.tensionspline.RBFEpsilon = 1;
-        demoOptions.RBF.tensionspline.Smooth = 0;
+        demoOptions.RBF.tensionspline.PolynomialDegree = 0;        
+        demoOptions.RBF.tensionspline.RBFEpsilon = 0.1;
         demoOptions.RBF.tensionspline.Regularization = 0;
         %   --> Regularized Spline
-        demoOptions.RBF.regularizedspline.PolynomialDegree = 0;        
+        demoOptions.RBF.regularizedspline.PolynomialDegree = 1;        
         demoOptions.RBF.regularizedspline.RBFEpsilon = 1;
-        demoOptions.RBF.regularizedspline.Smooth = 0;
         demoOptions.RBF.regularizedspline.Regularization = 0;        
         %   --> Gaussian
         demoOptions.RBF.gaussian.PolynomialDegree = 1;        
         demoOptions.RBF.gaussian.RBFEpsilon = 1;
-        demoOptions.RBF.gaussian.Smooth = 0;
         demoOptions.RBF.gaussian.Regularization = 0;
         %   --> Wendland
         demoOptions.RBF.wendland.PolynomialDegree = 1;        
         demoOptions.RBF.wendland.RBFEpsilon = 2;
-        demoOptions.RBF.wendland.Smooth = 0;
         demoOptions.RBF.wendland.Regularization = 0;
         % --> Kriging
         demoOptions.Kriging.Variogram.Type = 'gaussian';
         demoOptions.Kriging.Variogram.NumSamples = 100;
         demoOptions.Kriging.Variogram.OptimNugget = true;
         demoOptions.Kriging.PolynomialDegree = 0; % i.e., Ordinary Kriging
-        demoOptions.Kriging.Smooth = 0;
         demoOptions.Kriging.Regularization = 0;
         % --> QuadTreePURBF
         demoOptions.PURBF.Domain = [-3 -3 6 6];
@@ -211,7 +201,7 @@ switch lower(dataId)
     case 'franke'
         % Create 1000 samples of Franke's function
         addpath('./sample_functions');        
-        samples = rand(1000, 2);
+        samples = rand(100, 2);
         x = samples(:, 1);
         y = samples(:, 2);
         z = franke(samples(:, 1), samples(:, 2));        
@@ -231,64 +221,62 @@ switch lower(dataId)
         %   --> Linear
         demoOptions.RBF.linear.PolynomialDegree = 1;        
         demoOptions.RBF.linear.RBFEpsilon = 1;
-        demoOptions.RBF.linear.Smooth = 0;
         demoOptions.RBF.linear.Regularization = 0;
         %   --> Cubic
         demoOptions.RBF.cubic.PolynomialDegree = 1;        
         demoOptions.RBF.cubic.RBFEpsilon = 1;
-        demoOptions.RBF.cubic.Smooth = 0;
         demoOptions.RBF.cubic.Regularization = 0;
         %   --> Quintic
         demoOptions.RBF.quintic.PolynomialDegree = 1;        
         demoOptions.RBF.quintic.RBFEpsilon = 1;
-        demoOptions.RBF.quintic.Smooth = 0;
         demoOptions.RBF.quintic.Regularization = 0;
         %   --> Multiquadric
         demoOptions.RBF.multiquadric.PolynomialDegree = 1;        
         demoOptions.RBF.multiquadric.RBFEpsilon = 1;
-        demoOptions.RBF.multiquadric.Smooth = 0;
         demoOptions.RBF.multiquadric.Regularization = 0;
         %   --> Inverse Multiquadric
         demoOptions.RBF.inversemultiquadric.PolynomialDegree = 1;        
         demoOptions.RBF.inversemultiquadric.RBFEpsilon = 1;
-        demoOptions.RBF.inversemultiquadric.Smooth = 0;
         demoOptions.RBF.inversemultiquadric.Regularization = 0;
         %   --> Thin Plate Spline
         demoOptions.RBF.thinplate.PolynomialDegree = 1;        
         demoOptions.RBF.thinplate.RBFEpsilon = 1;
-        demoOptions.RBF.thinplate.Smooth = 0;
         demoOptions.RBF.thinplate.Regularization = 0;
         %   --> Green
         demoOptions.RBF.green.PolynomialDegree = 1;        
         demoOptions.RBF.green.RBFEpsilon = 1;
-        demoOptions.RBF.green.Smooth = 0;
         demoOptions.RBF.green.Regularization = 0;
+        %   --> Green with tension
+        demoOptions.RBF.greenwithtension.PolynomialDegree = 1;        
+        demoOptions.RBF.greenwithtension.RBFEpsilon = 0.3;
+        demoOptions.RBF.greenwithtension.RBFEpsilonIsNormalized = true;
+        demoOptions.RBF.greenwithtension.Regularization = 0;        
+        %   --> Green regularized with tension
+        demoOptions.RBF.greenregularizedwithtension.PolynomialDegree = 1;        
+        demoOptions.RBF.greenregularizedwithtension.RBFEpsilon = 0.3;
+        demoOptions.RBF.greenregularizedwithtension.RBFEpsilonIsNormalized = true;
+        demoOptions.RBF.greenregularizedwithtension.Regularization = 0;
         %   --> Spline with tension
         demoOptions.RBF.tensionspline.PolynomialDegree = 1;        
         demoOptions.RBF.tensionspline.RBFEpsilon = 1;
-        demoOptions.RBF.tensionspline.Smooth = 0;
         demoOptions.RBF.tensionspline.Regularization = 0;        
         %   --> Regularized Spline
         demoOptions.RBF.regularizedspline.PolynomialDegree = 0;        
         demoOptions.RBF.regularizedspline.RBFEpsilon = 1;
-        demoOptions.RBF.regularizedspline.Smooth = 0;
         demoOptions.RBF.regularizedspline.Regularization = 0;
         %   --> Gaussian
         demoOptions.RBF.gaussian.PolynomialDegree = 1;        
         demoOptions.RBF.gaussian.RBFEpsilon = 1;
-        demoOptions.RBF.gaussian.Smooth = 0;
         demoOptions.RBF.gaussian.Regularization = 0;
         %   --> Wendland
         demoOptions.RBF.wendland.PolynomialDegree = 1;        
         demoOptions.RBF.wendland.RBFEpsilon = 1;
-        demoOptions.RBF.wendland.Smooth = 0;
         demoOptions.RBF.wendland.Regularization = 0;
         % --> Kriging
         demoOptions.Kriging.Variogram.Type = 'gaussian';
         demoOptions.Kriging.Variogram.NumSamples = 100;
         demoOptions.Kriging.Variogram.OptimNugget = true;
         demoOptions.Kriging.PolynomialDegree = 0; % i.e., Ordinary Kriging
-        demoOptions.Kriging.Smooth = 0;
         demoOptions.Kriging.Regularization = 0;  
         % --> QuadTreePURBF
         demoOptions.PURBF.Domain = [0 0 1 1];
@@ -340,64 +328,62 @@ switch lower(dataId)
         %   --> Linear
         demoOptions.RBF.linear.PolynomialDegree = 1;        
         demoOptions.RBF.linear.RBFEpsilon = 1;
-        demoOptions.RBF.linear.Smooth = 0;
         demoOptions.RBF.linear.Regularization = 0;
         %   --> Cubic
         demoOptions.RBF.cubic.PolynomialDegree = 1;        
         demoOptions.RBF.cubic.RBFEpsilon = 1;
-        demoOptions.RBF.cubic.Smooth = 0;
         demoOptions.RBF.cubic.Regularization = 0;
         %   --> Quintic
         demoOptions.RBF.quintic.PolynomialDegree = 1;        
         demoOptions.RBF.quintic.RBFEpsilon = 1;
-        demoOptions.RBF.quintic.Smooth = 0;
         demoOptions.RBF.quintic.Regularization = 0;
         %   --> Multiquadric
         demoOptions.RBF.multiquadric.PolynomialDegree = 1;        
         demoOptions.RBF.multiquadric.RBFEpsilon = 1;
-        demoOptions.RBF.multiquadric.Smooth = 0;
         demoOptions.RBF.multiquadric.Regularization = 0;
         %   --> Inverse Multiquadric
         demoOptions.RBF.inversemultiquadric.PolynomialDegree = 1;        
         demoOptions.RBF.inversemultiquadric.RBFEpsilon = 1;
-        demoOptions.RBF.inversemultiquadric.Smooth = 0;
         demoOptions.RBF.inversemultiquadric.Regularization = 0;
         %   --> Thin Plate Spline
         demoOptions.RBF.thinplate.PolynomialDegree = 1;        
         demoOptions.RBF.thinplate.RBFEpsilon = 1;
-        demoOptions.RBF.thinplate.Smooth = 0;
         demoOptions.RBF.thinplate.Regularization = 0;
         %   --> Green
         demoOptions.RBF.green.PolynomialDegree = 1;        
         demoOptions.RBF.green.RBFEpsilon = 1;
-        demoOptions.RBF.green.Smooth = 0;
         demoOptions.RBF.green.Regularization = 0;
+        %   --> Green with tension
+        demoOptions.RBF.greenwithtension.PolynomialDegree = 1;        
+        demoOptions.RBF.greenwithtension.RBFEpsilon = 0.3;
+        demoOptions.RBF.greenwithtension.RBFEpsilonIsNormalized = true;
+        demoOptions.RBF.greenwithtension.Regularization = 0;        
+        %   --> Green regularized with tension
+        demoOptions.RBF.greenregularizedwithtension.PolynomialDegree = 1;        
+        demoOptions.RBF.greenregularizedwithtension.RBFEpsilon = 0.3;
+        demoOptions.RBF.greenregularizedwithtension.RBFEpsilonIsNormalized = true;
+        demoOptions.RBF.greenregularizedwithtension.Regularization = 0;
         %   --> Spline with tension
         demoOptions.RBF.tensionspline.PolynomialDegree = 1;        
         demoOptions.RBF.tensionspline.RBFEpsilon = 1;
-        demoOptions.RBF.tensionspline.Smooth = 0;
         demoOptions.RBF.tensionspline.Regularization = 0;        
         %   --> Regularized Spline
         demoOptions.RBF.regularizedspline.PolynomialDegree = 0;        
         demoOptions.RBF.regularizedspline.RBFEpsilon = 1;
-        demoOptions.RBF.regularizedspline.Smooth = 0;
         demoOptions.RBF.regularizedspline.Regularization = 0;
         %   --> Gaussian
         demoOptions.RBF.gaussian.PolynomialDegree = 1;        
         demoOptions.RBF.gaussian.RBFEpsilon = 1;
-        demoOptions.RBF.gaussian.Smooth = 0;
         demoOptions.RBF.gaussian.Regularization = 0;
         %   --> Wendland
         demoOptions.RBF.wendland.PolynomialDegree = 1;        
         demoOptions.RBF.wendland.RBFEpsilon = 1;
-        demoOptions.RBF.wendland.Smooth = 0;
         demoOptions.RBF.wendland.Regularization = 0;
         % --> Kriging
         demoOptions.Kriging.Variogram.Type = 'gaussian';
         demoOptions.Kriging.Variogram.NumSamples = 100;
         demoOptions.Kriging.Variogram.OptimNugget = true;
         demoOptions.Kriging.PolynomialDegree = 0; % i.e., Ordinary Kriging
-        demoOptions.Kriging.Smooth = 0;
         demoOptions.Kriging.Regularization = 0;  
         % --> QuadTreePURBF
         demoOptions.PURBF.Domain = [-1 -1 2 2];
@@ -418,4 +404,3 @@ switch lower(dataId)
 end
 
 end
-

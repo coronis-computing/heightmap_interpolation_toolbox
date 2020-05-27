@@ -27,7 +27,8 @@ function demoRBFInterpolants(dataId)
     plotResult(x, y, z, [], [], [], spNumRows, spNumCols, 2, 'Input Samples', xLabel, yLabel, zLabel, axisEqual);
  
     %% Apply the RBF interpolant with all the RBF definitions available
-    types = {'linear', 'cubic', 'quintic', 'multiquadric', 'thinplate', 'green', 'tensionspline', 'regularizedspline', 'gaussian', 'wendland'};
+%     types = {'linear', 'cubic', 'quintic', 'multiquadric', 'thinplate', 'green', 'tensionspline', 'regularizedspline', 'gaussian', 'wendland'};
+    types = {'tensionspline', 'regularizedspline'};
     for i = 1:numel(types)
         fprintf('- Interpolating using the Radial Basis Function Interpolant (%s kernel)...', types{i});
         tic;
@@ -35,6 +36,7 @@ function demoRBFInterpolants(dataId)
                                             'PolynomialDegree', demoOptions.RBF.(types{i}).PolynomialDegree, ...
                                             'RBF', types{i}, ...
                                             'RBFEpsilon', demoOptions.RBF.(types{i}).RBFEpsilon, ... 
+                                            'RBFEpsilonIsNormalized', demoOptions.RBF.(types{i}).RBFEpsilon, ... 
                                             'Smooth', demoOptions.RBF.(types{i}).Smooth, ...
                                             'Regularization', demoOptions.RBF.(types{i}).Regularization);
         ziRBF = rbfInterp.interpolate(xi, yi);
