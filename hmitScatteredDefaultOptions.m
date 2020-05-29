@@ -1,4 +1,4 @@
-function options = hmitDefaultOptions(x, y, z, xi, yi)
+function options = hmitScatteredDefaultOptions(x, y, z, xi, yi)
 
 numRefPts = numel(x);
 % Axis-Aligned Bounding Box of the reference values (3D)

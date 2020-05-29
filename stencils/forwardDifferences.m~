@@ -1,0 +1,12 @@
+function [Kfx, Kfy] = forwardDifferences()
+%FORWARDDIFFERENCES Create the forward differences kernels
+
+Kfx = zeros(3, 3);
+Kfx(2,2) = -1;
+Kfx(3,2) = 1;
+
+Kfy = zeros(3, 3);
+Kfy(2, 2) = 
+
+end
+

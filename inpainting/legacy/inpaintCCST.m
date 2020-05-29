@@ -30,7 +30,7 @@ for i=1:maxIters
 %     fnew = Pi(f + tau*myfun);
     fnew = Pi(f + tau*myfun);
     
-    diff = norm(fnew(:)-f(:))/norm(fnew(:))
+    diff = norm(fnew(:)-f(:))/norm(fnew(:));
     
     % UPDATE
     f = fnew;
