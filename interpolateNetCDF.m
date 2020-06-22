@@ -32,8 +32,6 @@ function interp = interpolateNetCDF(inputNetCDF, outputNetCDF, method, options)
 %                   - 'amle'
 
 %% Script
-
-
 img = ncread(inputNetCDF , 'elevation');
 mask = ncread(inputNetCDF, 'interpolation_flag');
 mask = ~isnan(mask); % Convert to boolean
@@ -54,7 +52,7 @@ if strcmpi(methodStart, 'nearest') || ...
    strcmpi(methodStart, 'rbf') || ...
    strcmpi(methodStart, 'qtpurbf')
 
-    if nargin < 7 && ~strcmpi(method, 'Nearest') && ~strcmpi(method, 'Delaunay') && ~strcmpi(method, 'Natural')
+    if nargin < 4 && ~strcmpi(methodStart, 'Nearest') && ~strcmpi(methodStart, 'Delaunay') && ~strcmpi(methodStart, 'Natural')
         options = hmitScatteredDefaultOptions(x, y, z, xi, yi);
     end
 
@@ -63,9 +61,17 @@ if strcmpi(methodStart, 'nearest') || ...
     
 elseif strcmpi(methodStart, 'inpainting')
         
-    if nargin < 7 && ~strcmpi(method, 'Nearest') && ~strcmpi(method, 'Delaunay') && ~strcmpi(method, 'Natural')
+    if nargin < 4
         options = hmitInpaintingDefaultOptions(methodSub);
     end
+    
+    % Compute the grid step from the data and override defaults or user input
+%     lats = ncread(inputNetCDF , 'lat');
+%     lons = ncread(inputNetCDF , 'lon');
+%     hx = abs((lons(end)-lons(1))/numel(lons));
+%     hy = abs((lats(end)-lats(1))/numel(lats));
+%     options.GridStepX = hx;
+%     options.GridStepY = hy;
     
     % Inpainting method
     param = structToVarargin(options);
@@ -81,6 +87,8 @@ elseif strcmpi(methodStart, 'inpainting')
         case 'ccst'
             inpainter = CCSTInpainter(param{:});
 %             interp = inpaintCCST(img, mask, 0);
+        case 'bertalmio'
+            inpainter = BertalmioInpainter(param{:});
         otherwise
             error('Unknown inpainting type');
     end    

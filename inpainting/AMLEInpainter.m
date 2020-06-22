@@ -7,8 +7,7 @@ classdef AMLEInpainter < FDPDEInpainter
     %   NO. 2, FEBRUARY 2002
     % 
     
-    properties
-        hx, hy; % Step size of the grid in X/Y
+    properties        
         Kfx;
         Kfy;
         Kbx;
@@ -23,12 +22,7 @@ classdef AMLEInpainter < FDPDEInpainter
             varargin = obj.removeParentParametersFromVarargin(varargin{:});
             
             p = inputParser;
-            addParameter(p, 'GridStepX', 1, @isscalar);
-            addParameter(p, 'GridStepY', 1, @isscalar);
             parse(p, varargin{:});
-            
-            obj.hx = p.Results.GridStepX;
-            obj.hy = p.Results.GridStepY;
             
             % Compute the stencils
             [obj.Kfx, obj.Kfy] = forwardDifferenceKernels(obj.hx, obj.hy);

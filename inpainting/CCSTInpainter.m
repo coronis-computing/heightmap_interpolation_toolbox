@@ -7,8 +7,6 @@ classdef CCSTInpainter < FDPDEInpainter
     properties
         tension = 1e-2; % Tension parameter. Set it to 1 for harmonic interpolation and to 0 for biharmonic interpolation. Any value in between is a mix of both.
         laplacianStencil = [];
-        hx = 1;
-        hy = 1;
     end
     
     methods
@@ -18,14 +16,10 @@ classdef CCSTInpainter < FDPDEInpainter
             
             p = inputParser;
             validTension = @(x) isscalar(x) && x >= 0 && x <=1;
-            addParameter(p, 'Tension', 0, validTension);
-            addParameter(p, 'GridStepX', 1, @isscalar);
-            addParameter(p, 'GridStepY', 1, @isscalar);
+            addParameter(p, 'Tension', 0, validTension);            
             parse(p, varargin{:});
             
             obj.tension = p.Results.Tension;
-            obj.hx = p.Results.GridStepX;
-            obj.hy = p.Results.GridStepY;
             
             % Compute the stencils
             obj.laplacianStencil = laplacian5PointsStencil(obj.hx, obj.hy);

@@ -8,6 +8,8 @@ classdef (Abstract) FDPDEInpainter
         maxIters = 100000; % Maximum number of gradient descent iterations to perform
         dt = 1e-2; % Gradient descent step size
         relax = 1; % Over-relaxation parameter
+        hx = 1; % Grid step size in X
+        hy = 1; % Grid step size in Y
         % Debug options
         debugShowStep = false;
         debugCreateVideo = false;
@@ -31,12 +33,17 @@ classdef (Abstract) FDPDEInpainter
             addParameter(p, 'Relaxation', 1, validRelaxation);
             addParameter(p, 'DebugShowStep', false, validScalarLogical);
             addParameter(p, 'DebugVideoFile', '', @ischar);
-            addParameter(p, 'DebugItersPerFrame', 1000, validGTZeroInt);            
+            addParameter(p, 'DebugItersPerFrame', 1000, validGTZeroInt);
+            addParameter(p, 'GridStepX', 1, @isscalar);
+            addParameter(p, 'GridStepY', 1, @isscalar);
             parse(p, varargin{:});
             
             obj.relChangeTolerance = p.Results.RelChangeTolerance;              
             obj.maxIters = p.Results.MaxIters;  
-            obj.dt = p.Results.UpdateStepSize;
+            obj.dt = p.Results.UpdateStepSize;                        
+            obj.hx = p.Results.GridStepX;
+            obj.hy = p.Results.GridStepY;
+            
             obj.debugShowStep = p.Results.DebugShowStep;
             obj.debugItersPerFrame = p.Results.DebugItersPerFrame;
             if ~isempty(p.Results.DebugVideoFile)
@@ -45,7 +52,7 @@ classdef (Abstract) FDPDEInpainter
             end            
         end
         
-        function f = inpaint(obj, image, mask)
+        function inpaitedImage = inpaint(obj, image, mask)
             %INPAINT Inpainting of an "image" by iterative minimization of
             %   a PDE functional
             %
@@ -56,10 +63,13 @@ classdef (Abstract) FDPDEInpainter
             % Output:
             %   f: inpainted image
             
-            Pi = @(f)f.*(1-mask) + image.*mask;
+            % Get the number of channels in the image
+            [sy, sx, channels] = size(image);
+            if size(mask, 1) ~= sy || size(mask, 2) ~= sx
+                error('The mask must have the first two dimensions equal to those of the image');
+            end
             
-            % Initialize
-            f = image;
+            inpaitedImage = zeros(size(image));
             
             % Initialize the debug video?
             if obj.debugCreateVideo
@@ -69,42 +79,54 @@ classdef (Abstract) FDPDEInpainter
                open(video);               
             end
             
-            % Gradient descent
-            for i=1:obj.maxIters
-                % Perform a step in the optimization                
-                fnew = Pi(f - obj.dt*obj.stepFun(f)); % Minus because we assume stepFun to return the gradient, and we want to move against the gradient. Take it into account when defining a stepFun!
+            % Perform inpainting on each channel            
+            for c = 1:channels                     
+                % Slice the current channel
+                f = image(:, :, c);
+                Pi = @(f)f.*(1-mask) + image(:, :, c).*mask;
                 
-                % Over-relaxation?                
-                if obj.relax > 1
-                    fnew = Pi(f*(1-obj.relax) + fnew*obj.relax);
-                end
+%                 % Perform pre-processing?
+%                 [img, mask, obj] = preProcess(obj, img, mask);
                 
-                % Compute the difference with the previous step
-                diff = norm(fnew(:)-f(:))/norm(fnew(:));
-                
-                % Update the function
-                f = fnew;
-                
-                % Debug output (if required)
-                if (obj.debugShowStep || obj.debugCreateVideo) && mod(i-1, obj.debugItersPerFrame) == 0
-                    imagesc(f'); axis xy; colorbar;
-                    if obj.createDemoVideo
-                        frame = getframe(gcf);        
-                        writeVideo(video, frame);
+                % Gradient descent
+                for i=1:obj.maxIters
+                    % Perform a step in the optimization                
+                    fnew = Pi(f - obj.dt*obj.stepFun(f)); % Minus because we assume stepFun to return the gradient, and we want to move against the gradient. Take it into account when defining a stepFun!
+
+                    % Over-relaxation?                
+                    if obj.relax > 1
+                        fnew = Pi(f*(1-obj.relax) + fnew*obj.relax);
+                    end                    
+                    
+                    % Compute the difference with the previous step
+                    diff = norm(fnew(:)-f(:))/norm(fnew(:));
+
+                    % Update the function
+                    f = fnew;
+
+                    % Debug output (if required)
+                    if (obj.debugShowStep || obj.debugCreateVideo) && mod(i-1, obj.debugItersPerFrame) == 0
+                        imagesc(f'); axis xy; colorbar;
+                        if obj.createDemoVideo
+                            frame = getframe(gcf);        
+                            writeVideo(video, frame);
+                        end
+                    end
+
+                    % Stop if "almost" no change
+                    if diff < obj.relChangeTolerance
+                        break;
                     end
                 end
-                
-                % Stop if "almost" no change
-                if diff < obj.relChangeTolerance
-                    break;
+
+                % Issue a warning if the maximum number of iterations has been
+                % reached (normally means that the solution will not be
+                % useful because it did not converge...)
+                if i == obj.maxIters
+                    warning('Maximum number of iterations reached');
                 end
-            end
-            
-            % Issue a warning if the maximum number of iterations has been
-            % reached (normally means that the solution will not be
-            % useful because it did not converge...)
-            if i == obj.maxIters
-                warning('Maximum number of iterations reached');
+                
+                inpaitedImage(:, :, c) = f;
             end
             
             % Close the debug video?
@@ -112,13 +134,27 @@ classdef (Abstract) FDPDEInpainter
         end
                 
         function varargin = removeParentParametersFromVarargin(obj, varargin)
-            paramsToDelete = {'UpdateStepSize', 'RelChangeTolerance', 'MaxIters', 'DebugShowStep', 'DebugVideoFile', 'DebugItersPerFrame'};
+            paramsToDelete = {'UpdateStepSize', 'RelChangeTolerance', 'MaxIters', 'Relaxation', 'DebugShowStep', 'DebugVideoFile', 'DebugItersPerFrame', 'GridStepX', 'GridStepY'};
             varargin = deleteParamsFromVarargin(paramsToDelete, varargin);
         end
     end
     
+    % The methods that need to be implemented by subclasses
     methods (Abstract) 
         f = stepFun(obj, f, mask);
     end
+    
+    % Optional methods that can be redefined, if some method needs them
+    methods (Access = protected)
+        function preProcess(obj, img, mask)
+            % Pre-processing to be executed prior to the gradient descent
+        end
+        function stepRegularization(obj, img, mask)
+         	% Regularization to be executed after a gradient descent step
+        end
+        function postProcessing(obj, img, mask)
+            % Post-processing to be executed after the gradient descent
+        end
+   end
 end
 
