@@ -25,9 +25,10 @@ function demoRBFInterpolants(dataId)
     
     %% Prepare show the scattered input data    
     plotResult(x, y, z, [], [], [], spNumRows, spNumCols, 2, 'Input Samples', xLabel, yLabel, zLabel, axisEqual);
- 
+    
     %% Apply the RBF interpolant with all the RBF definitions available
-    types = {'linear', 'cubic', 'quintic', 'multiquadric', 'thinplate', 'green', 'tensionspline', 'regularizedspline', 'gaussian', 'wendland'};
+%     types = {'linear', 'cubic', 'quintic', 'multiquadric', 'thinplate', 'green', 'tensionspline', 'regularizedspline', 'gaussian', 'wendland'};
+    types = {'gaussian'};
     for i = 1:numel(types)
         fprintf('- Interpolating using the Radial Basis Function Interpolant (%s kernel)...', types{i});
         tic;

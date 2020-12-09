@@ -5,7 +5,6 @@ classdef QuadTreePURBFInterpolant < Interpolant
     
     properties
         root; % Root node of the tree (of type QTNode)
-        minPts; % Minimum number of points in a QTNode                
         weightingRBF; % The RBF used to compute the Sheppard's weights of the Partition of Unity
         distFun; % Distance function between points in the XY plane
     end
@@ -24,16 +23,19 @@ classdef QuadTreePURBFInterpolant < Interpolant
             p = inputParser;
             validOverlap = @(x) isscalar(x) && x >= 0;
             validDistanceType = @(x) ischar(x) && strcmpi(x, 'euclidean') || strcmpi(x, 'haversine');
+            validMinCellSizePercent = @(x) isscalar(x) && x <= 1 && x >= 0;
             validDomain = @(x) numel(x) == 4;
             addParameter(p, 'MinPointsInCell', 25, @isscalar); % The minimum number of points in a QuadTree cell
+            addParameter(p, 'MinCellSizePercent', 0.1, validMinCellSizePercent); % The minimum cell size, expressed as a percentage of the maximum side length of the bounding box of the query domain
             addParameter(p, 'Overlap', 0.25, validOverlap); % Overlap between circles            
             addParameter(p, 'DistanceType', 'euclidean', validDistanceType);
             addParameter(p, 'Domain', [], validDomain); % 4-elements vector specifying the bounding box of the query domain [xmin, ymin, width, height], so that the QuadTree is forced to cover the defined area and no query point gets out of the domain
             parse(p, vararginA{:});
             
-            obj.minPts = p.Results.MinPointsInCell;
+            minPts = p.Results.MinPointsInCell;
             overlap = p.Results.Overlap;
             domain = p.Results.Domain;
+            minCellSizePercent = p.Results.MinCellSizePercent;
             
             distanceType = p.Results.DistanceType;
             if strcmpi(distanceType, 'euclidean')
@@ -46,7 +48,7 @@ classdef QuadTreePURBFInterpolant < Interpolant
             
             % Remove this parameters from varargin, as that variable will
             % be used later on to create the local RBF interpolator objects
-            paramsToDelete = {'MinPointsInCell', 'Overlap', 'Domain'};
+            paramsToDelete = {'MinPointsInCell', 'MinCellSizePercent', 'Overlap', 'Domain'};
             vararginB = deleteParamsFromVarargin(paramsToDelete, varargin);
             
             % Compute the extents of the root node
@@ -71,14 +73,7 @@ classdef QuadTreePURBFInterpolant < Interpolant
             obj.root = QTNode(minX, minY, wh, wh, obj.data, obj.distFun, overlap);
             
             % Subdivide the root node (and effectively create the tree top to bottom)
-            obj.root = obj.root.subdivide(obj.minPts);
-            
-            % Correct the tree (some of the nodes may contain less than the
-            % minimum required number of points)
-            [obj.root, someCorrection] = obj.root.correct(obj.minPts);
-            while someCorrection
-                [obj.root, someCorrection] = obj.root.correct(obj.minPts);
-            end
+            obj.root = obj.root.subdivide(minPts, wh*minCellSizePercent);
             
             % Remove stored points in non-leaf nodes, from now on we will
             % just use leaves
@@ -166,7 +161,7 @@ classdef QuadTreePURBFInterpolant < Interpolant
                 radius(i) = leaves(i).getRadius();                
             end
             
-            dists = pdist2([x, y], centers, obj.distFun); % We take advantage of the distance function being part of each RBF to avoid using another attribute in this class
+            dists = pdist2([x, y], centers, obj.distFun); 
 %             dists = pdist2([x, y], centers); 
             
             f = zeros(numel(x), 1); % We will store here the accumulation of each RBF contribution (weighted locally)
@@ -182,7 +177,7 @@ classdef QuadTreePURBFInterpolant < Interpolant
                 weights = leaves(i).weightingRBF(dists(ind, i));
                 
                 % Apply the weights to the corresponding function and
-                % accomulate
+                % accumulate
                 f(ind) = f(ind) + rbfEval.*weights;
                 
                 % Accumulate the weights for the final division

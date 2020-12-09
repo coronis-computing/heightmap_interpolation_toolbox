@@ -78,17 +78,17 @@ switch lower(dataId)
         demoOptions.RBF.tensionspline.Regularization = 0;
         %   --> Regularized Spline
         demoOptions.RBF.regularizedspline.PolynomialDegree = 0;        
-        demoOptions.RBF.regularizedspline.RBFEpsilon = 1;
+        demoOptions.RBF.regularizedspline.RBFEpsilon = 0.01;
         demoOptions.RBF.regularizedspline.Smooth = 0;
         demoOptions.RBF.regularizedspline.Regularization = 0;        
         %   --> Gaussian
-        demoOptions.RBF.gaussian.PolynomialDegree = 0;        
-        demoOptions.RBF.gaussian.RBFEpsilon = 0.1;
+        demoOptions.RBF.gaussian.PolynomialDegree = 1;        
+        demoOptions.RBF.gaussian.RBFEpsilon = 0.025;
         demoOptions.RBF.gaussian.Smooth = 0;
-        demoOptions.RBF.gaussian.Regularization = 1e-15;
+        demoOptions.RBF.gaussian.Regularization = 0;
         %   --> Wendland
         demoOptions.RBF.wendland.PolynomialDegree = 1;        
-        demoOptions.RBF.wendland.RBFEpsilon = 1;
+        demoOptions.RBF.wendland.RBFEpsilon = 0.025;
         demoOptions.RBF.wendland.Smooth = 0;
         demoOptions.RBF.wendland.Regularization = 0;
         % --> Kriging
@@ -101,6 +101,7 @@ switch lower(dataId)
         % --> QuadTreePURBF
         demoOptions.PURBF.Domain = [210.8 -48.5 1 0.6000];
         demoOptions.PURBF.MinPointsInCell = 10;
+        demoOptions.PURBF.MinCellSizePercent = 0.1;
         demoOptions.PURBF.Overlap = 0.25;
         % --> MLS
         demoOptions.MLS.PolynomialDegree = 2;
@@ -197,6 +198,7 @@ switch lower(dataId)
         % --> QuadTreePURBF
         demoOptions.PURBF.Domain = [-3 -3 6 6];
         demoOptions.PURBF.MinPointsInCell = 100;
+        demoOptions.PURBF.MinCellSizePercent = 0.1;
         demoOptions.PURBF.Overlap = 0.25;
         % --> MLS
         demoOptions.MLS.PolynomialDegree = 2;
@@ -275,7 +277,7 @@ switch lower(dataId)
         demoOptions.RBF.regularizedspline.Regularization = 0;
         %   --> Gaussian
         demoOptions.RBF.gaussian.PolynomialDegree = 1;        
-        demoOptions.RBF.gaussian.RBFEpsilon = 1;
+        demoOptions.RBF.gaussian.RBFEpsilon = 0.1;
         demoOptions.RBF.gaussian.Smooth = 0;
         demoOptions.RBF.gaussian.Regularization = 0;
         %   --> Wendland
@@ -293,6 +295,7 @@ switch lower(dataId)
         % --> QuadTreePURBF
         demoOptions.PURBF.Domain = [0 0 1 1];
         demoOptions.PURBF.MinPointsInCell = 25;
+        demoOptions.PURBF.MinCellSizePercent = 0.1;
         demoOptions.PURBF.Overlap = 0.25;
         % --> MLS
         demoOptions.MLS.PolynomialDegree = 2;
@@ -305,29 +308,43 @@ switch lower(dataId)
         demoOptions.Plot.ZLabel = 'z';       
         demoOptions.Plot.AxisEqual = false;
     case 'flower'
-        % Create 400 samples of Flower function
-        addpath('./sample_functions');        
-%         numSamples = 400;
-%         a = -1;
-%         b = 1;
-%         samples = (b-a).*rand(numSamples, 2) + a;
-%         x = samples(:, 1);
-%         y = samples(:, 2);
+%         % Create 400 samples of Flower function
+%         addpath('./sample_functions');        
+% %         numSamples = 400;
+% %         a = -1;
+% %         b = 1;
+% %         samples = (b-a).*rand(numSamples, 2) + a;
+% %         x = samples(:, 1);
+% %         y = samples(:, 2);
+% 
+%         xx = linspace(-1, 1, 10);
+%         yy = linspace(-1, 1, 10);
+%         [x, y] = meshgrid(xx, yy);
+%         z = flower(x, y);        
+%         
+%         % Create the evaluation grid
+% %         [xi, yi] = meshgrid(-1:1/100:1, -1:1/100:1);
+% 
+%         xi = xx(randsample(numel(xx), 400, true));
+%         yi = yy(randsample(numel(yy), 400, true));
+%         % True values of the function at the evaluation grid
+%         zt = flower(xi, yi);   
 
-        xx = linspace(-1, 1, 10);
-        yy = linspace(-1, 1, 10);
-        [x, y] = meshgrid(xx, yy);
-        x = x(:);
-        y = y(:);
-        z = flower(x, y);        
+        % Create 1000 samples of Flower function
+        addpath('./sample_functions');        
+        numSamples = 400;
+        a = -1;
+        b = 1;
+        samples = (b-a).*rand(numSamples, 2) + a;
+        x = samples(:, 1);
+        y = samples(:, 2);
+        z = flower(samples(:, 1), samples(:, 2));        
         
         % Create the evaluation grid
-%         [xi, yi] = meshgrid(-1:1/100:1, -1:1/100:1);
-
-        xi = xx(randsample(numel(xx), 400, true));
-        yi = yy(randsample(numel(yy), 400, true));
+        [xi, yi] = meshgrid(-1:0.025:1, -1:0.025:1);
         % True values of the function at the evaluation grid
         zt = flower(xi, yi);   
+
         % Create the options structure
         demoOptions.DistanceType = 'euclidean';
         % --> IDW
@@ -384,7 +401,7 @@ switch lower(dataId)
         demoOptions.RBF.regularizedspline.Regularization = 0;
         %   --> Gaussian
         demoOptions.RBF.gaussian.PolynomialDegree = 1;        
-        demoOptions.RBF.gaussian.RBFEpsilon = 1;
+        demoOptions.RBF.gaussian.RBFEpsilon = 0.01;
         demoOptions.RBF.gaussian.Smooth = 0;
         demoOptions.RBF.gaussian.Regularization = 0;
         %   --> Wendland
@@ -402,6 +419,7 @@ switch lower(dataId)
         % --> QuadTreePURBF
         demoOptions.PURBF.Domain = [-1 -1 2 2];
         demoOptions.PURBF.MinPointsInCell = 25;
+        demoOptions.PURBF.MinCellSizePercent = 0.1;
         demoOptions.PURBF.Overlap = 0.25;
         % --> MLS
         demoOptions.MLS.PolynomialDegree = 2;

@@ -98,10 +98,10 @@ classdef QTNode
             end            
         end
         
-        function obj = subdivide(obj, minPts)
+        function obj = subdivide(obj, minPts, minCellSideLength)
             %subdivide Recursive subdivision of the Quadtree
             
-            % End of recursion
+            % End of recursion if we have less than minimum number of points in the cell 
             if size(obj.pts, 1) < minPts
                 return;
             end
@@ -110,46 +110,44 @@ classdef QTNode
             w = obj.w/2;
             h = obj.h/2;
             
+            % End of recursion if children will have a length smaller than the minimum cell length
+            if w < minCellSideLength || h < minCellSideLength
+                return;
+            end
+            
             % Create the 4 childrens and span subdivision
             % South-West node
-%             pts = QTNode.ptsInNodeCircle(obj.x, obj.y, w, h, obj.pts, overlap);
-            swNode = QTNode(obj.x, obj.y, w, h, obj.pts, obj.distFun, obj.overlap); 
-            swNode = swNode.subdivide(minPts);
+            swNode = QTNode(obj.x, obj.y, w, h, obj.pts, obj.distFun, obj.overlap);             
+            if size(swNode.pts, 1) < minPts
+                % We also end recursion if one of the childrens to span has
+                % less than minPts, because this would mean that we should
+                % not be dividing the current node
+                return;
+            end
             % North-West node
-%             pts = QTNode.ptsInNodeCircle(obj.x+w, obj.y, w, h, obj.pts, overlap);
-            nwNode = QTNode(obj.x+w, obj.y, w, h, obj.pts, obj.distFun, obj.overlap); 
-            nwNode = nwNode.subdivide(minPts);
+            nwNode = QTNode(obj.x+w, obj.y, w, h, obj.pts, obj.distFun, obj.overlap);             
+            if size(nwNode.pts, 1) < minPts
+                return;
+            end
             % South-East node
-%             pts = QTNode.ptsInNodeCircle(obj.x, obj.y+h, w, h, obj.pts, overlap);
-            seNode = QTNode(obj.x, obj.y+h, w, h, obj.pts, obj.distFun, obj.overlap); 
-            seNode = seNode.subdivide(minPts);
+            seNode = QTNode(obj.x, obj.y+h, w, h, obj.pts, obj.distFun, obj.overlap);             
+            if size(seNode.pts, 1) < minPts
+                return;
+            end
             % North-East node
-%             pts = QTNode.ptsInNodeCircle(obj.x+w, obj.y+h, w, h, obj.pts, overlap);
             neNode = QTNode(obj.x+w, obj.y+h, w, h, obj.pts, obj.distFun, obj.overlap); 
-            neNode = neNode.subdivide(minPts);
+            if size(neNode.pts, 1) < minPts
+                return;
+            end
+            
+            % Span subdivision
+            swNode = swNode.subdivide(minPts, minCellSideLength);
+            nwNode = nwNode.subdivide(minPts, minCellSideLength);
+            seNode = seNode.subdivide(minPts, minCellSideLength);
+            neNode = neNode.subdivide(minPts, minCellSideLength);
             
             obj.childs = [swNode, seNode, nwNode, neNode];
 %             obj.pts = []; % Free space, points are stored only at leaves
-        end
-        
-        function [obj, some_correction] = correct(obj, minPts)
-            %correct Correct the nodes with too few points
-            
-            % If one of the sub-nodes has too few points, reu-unite in a single node
-            some_correction = false;
-            if size(obj.childs(1).pts, 1) < minPts || ...
-               size(obj.childs(2).pts, 1) < minPts || ...
-               size(obj.childs(3).pts, 1) < minPts || ...
-               size(obj.childs(4).pts, 1) < minPts
-                obj.pts = unique([obj.childs(1).pts; obj.childs(2).pts; obj.childs(3).pts; obj.childs(4).pts], 'rows');
-                obj.childs = [];
-                some_correction = true;
-            else
-                obj.childs(1) = obj.childs(1).correct(minPts);
-                obj.childs(2) = obj.childs(2).correct(minPts);
-                obj.childs(3) = obj.childs(3).correct(minPts);
-                obj.childs(4) = obj.childs(4).correct(minPts);
-            end
         end
         
         function obj = computeRBFAtLeafs(obj, varargin)

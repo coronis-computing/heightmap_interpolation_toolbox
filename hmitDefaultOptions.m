@@ -81,6 +81,7 @@ options.Kriging.Regularization = 0;
 % --> QuadTreePURBF
 options.PURBF.Domain = intBox;
 options.PURBF.MinPointsInCell = 0.05*numRefPts;
+options.PURBF.MinCellSizePercent = 0.05;
 options.PURBF.Overlap = 0.25;
 % --> MLS
 options.MLS.PolynomialDegree = 2;
