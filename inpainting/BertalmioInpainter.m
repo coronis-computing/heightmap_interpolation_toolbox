@@ -24,8 +24,8 @@ classdef BertalmioInpainter < FDPDEInpainter
             obj.laplacianStencil = laplacian5PointsStencil(obj.hx, obj.hy);
             [obj.Kfx, obj.Kfy] = forwardDifferenceKernels(obj.hx, obj.hy);
             [obj.Kbx, obj.Kby] = backwardDifferenceKernels(obj.hx, obj.hy);
-            obj.Kxx = obj.Kix - obj.Kbx;
-            obj.Kyy = obj.Kiy - obj.Kby;
+            obj.Kxx = obj.Kfx - obj.Kbx;
+            obj.Kyy = obj.Kfy - obj.Kby;
             [obj.Kcx, obj.Kcy] = centeredDifferenceKernels(obj.hx, obj.hy);
         end
         

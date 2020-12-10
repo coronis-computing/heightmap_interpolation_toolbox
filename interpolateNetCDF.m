@@ -28,8 +28,9 @@ function interp = interpolateNetCDF(inputNetCDF, outputNetCDF, method, options)
 %               - 'inpainting.<type>': Inpainting method. Available types:
 %                   - 'sobolev'
 %                   - 'tv'
-%                   - 'ccst'
 %                   - 'amle'
+%                   - 'ccst'
+%                   - 'bertalmio'
 
 %% Script
 img = ncread(inputNetCDF , 'elevation');
