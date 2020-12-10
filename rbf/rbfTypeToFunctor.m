@@ -22,6 +22,10 @@ else
             rbfFun = @(x) regularizedSplineRBF(x, e);        
         case 'green'
             rbfFun = @(x) greenRBF(x);                    
+        case 'greenwithtension'
+            rbfFun = @(x) greenWithTensionRBF(x, e);
+        case 'greenregularizedwithtension'
+            rbfFun = @(x) greenRegularizedWithTensionRBF(x, e);
         case 'gaussian'
             rbfFun = @(x) gaussianRBF(x, e);                    
         case 'wendland'

@@ -48,7 +48,7 @@ function zi = interpolate(x, y, z, xi, yi, method, options)
 
 % Parameters' check
 if nargin < 7 && ~strcmpi(method, 'Nearest') && ~strcmpi(method, 'Delaunay') && ~strcmpi(method, 'Natural')
-    options = hmitScatteredDefaultOptions(x, y, z, xi, yi);
+    options = hmitDefaultOptions(x, y, z, xi, yi);
 end
 
 C = strsplit(method, '.');

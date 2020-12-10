@@ -13,9 +13,6 @@ classdef RBFInterpolant < Interpolant
             %RBFINTERPOLANT Construct an instance of this class
             %   Detailed explanation goes here
             
-            % Superclass constructor
-            obj@Interpolant(x, y, z);
-            
             % Validation functions for the input parameters
             validDistanceType = @(x) ischar(x) && strcmpi(x, 'euclidean') || strcmpi(x, 'haversine');
             validPolynomialDegree = @(x) isscalar(x) && x <= 3;
@@ -27,21 +24,36 @@ classdef RBFInterpolant < Interpolant
                                               strcmpi(x, 'inversemultiquadric') || ...
                                               strcmpi(x, 'thinplate') || ...
                                               strcmpi(x, 'green') || ...
+                                              strcmpi(x, 'greenwithtension') || ...
+                                              strcmpi(x, 'greenregularizedwithtension') || ...
                                               strcmpi(x, 'tensionspline') || ...
                                               strcmpi(x, 'regularizedspline') || ...
                                               strcmpi(x, 'gaussian') || ...
                                               strcmpi(x, 'wendland'));
+            validScalarLogical = @(x) isscalar(x) && islogical(x);
             
             % Check the input parameters using inputParser
             p = inputParser;
             addParameter(p, 'DistanceType', 'euclidean', validDistanceType);
             addParameter(p, 'PolynomialDegree', 0, validPolynomialDegree);
             addParameter(p, 'RBF', 'multiquadric', validRBFType);
-            addParameter(p, 'RBFEpsilon', 1, @isscalar); % The additional parameter of some RBF
-            addParameter(p, 'Smooth', 0, @isscalar); % The smoothing parameter (set it to something >0 for APPROXIMATE instead of INTERPOLATE)
-            addParameter(p, 'Regularization', 0, @isscalar); % Regularization coefficient to avoid matrix being close to singular (specially needed when using gaussianRBF)            
+            addParameter(p, 'RBFEpsilon', 0, @isscalar); % The additional parameter of some RBF
+            addParameter(p, 'RBFEpsilonIsNormalized', false, validScalarLogical); % If set to true, the RBF 
+            addParameter(p, 'Regularization', 0, @isscalar); % Regularization coefficient to avoid matrix being close to singular (specially needed when using gaussianRBF). Can also be seen as a 'smoothing' parameter (set it to something >0 in order to APPROXIMATE instead of INTERPOLATE)
             parse(p, varargin{:});
-                    
+            
+            % If required to, scale the epsilon
+            epsilon = p.Results.RBFEpsilon;
+            if p.Results.RBFEpsilonIsNormalized
+                if epsilon < 0 || epsilon > 1
+                    error('RBFEpsilonIsNormalized parameter is set to true, but RBFEpsilon is not between 0 and 1!');
+                end
+                epsilon = scaleEpsilonAccordingToRbfType(p.Results.RBF, epsilon, x, y, z);
+            end
+            
+            % Superclass constructor
+            obj@Interpolant(x, y, z);
+            
             % Get the distanceFunctor
             distanceType = p.Results.DistanceType;
             if strcmpi(distanceType, 'euclidean')
@@ -53,10 +65,10 @@ classdef RBFInterpolant < Interpolant
             end
            
             % Get the RBF functor
-            obj.rbfFun = rbfTypeToFunctor(p.Results.RBF, p.Results.RBFEpsilon);
+            obj.rbfFun = rbfTypeToFunctor(p.Results.RBF, epsilon);                        
                         
             % Functor
-            [obj.weights, obj.poly] = RBFInterpolant.solveWeightsAndPoly(x, y, z, obj.distFun, obj.rbfFun, p.Results.PolynomialDegree, p.Results.Smooth, p.Results.Regularization);
+            [obj.weights, obj.poly] = RBFInterpolant.solveWeightsAndPoly(x, y, z, obj.distFun, obj.rbfFun, p.Results.PolynomialDegree, p.Results.Regularization);
         end
         
         function z = interpolate(obj, x, y)
@@ -114,7 +126,7 @@ classdef RBFInterpolant < Interpolant
     end
     
     methods (Static)
-        function [weights, poly] = solveWeightsAndPoly(x, y, z, distFun, rbfFun, polynomialDegree, smooth, regularizationCoeff)
+        function [weights, poly] = solveWeightsAndPoly(x, y, z, distFun, rbfFun, polynomialDegree, regularizationCoeff)
             % Redundant check, since this would have returned a warning in
             % the constructor of the superclass, which is called before
             % this function. Still, since we made the function static, we
@@ -145,11 +157,6 @@ classdef RBFInterpolant < Interpolant
             A = A + A'; % Mirror over the diagonal (matrix A is symmetric)
             % Compute RBF values at the diagonal (rbf(0))
             A(logical(eye(numSamples))) = rbfFun(0);
-
-            % Smoothing?
-            if smooth ~= 0
-                A = A - eye(numSamples)*smooth;
-            end
 
             % Regularizer?
             if regularizationCoeff ~= 0
