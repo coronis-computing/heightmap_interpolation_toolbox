@@ -101,7 +101,7 @@ The code is self-documented. Each function in the toolbox can be queried for `he
 help interpolateScattered
 ```
 
-In addition, we provide a complete per-function documentation (generated with [m2html](https://www.artefact.tk/software/matlab/m2html/)) at: [hmit-docs.coronis.es](hmit-docs.coronis.es)
+In addition, we provide a complete per-function documentation (generated with [m2html](https://www.artefact.tk/software/matlab/m2html/)) at: [hmit-docs.coronis.es](http://hmit-docs.coronis.es)
 
 Finally, take a look at the different demos on the `demo` folder. In addition to showing the behaviour of the methods on some sample data, their sources also show how to call the different interpolation functions/objects individually.
 
