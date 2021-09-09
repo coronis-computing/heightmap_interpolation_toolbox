@@ -18,6 +18,8 @@ classdef AMLEInpainter < FDPDEInpainter
     
     methods
         function obj = AMLEInpainter(varargin)
+            obj@FDPDEInpainter(varargin{:});
+            
             % Constructor
             varargin = obj.removeParentParametersFromVarargin(varargin{:});
             
