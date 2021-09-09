@@ -74,7 +74,7 @@ classdef (Abstract) FDPDEInpainter
             % Initialize the debug video?
             if obj.debugCreateVideo
                 % Create the output video
-               video = VideoWriter(obj.debugOutputVideoFile, 'Motion JPEG AVI');
+               video = VideoWriter(obj.debugVideoFile, 'Motion JPEG AVI');
                video.Quality = 100;
                open(video);               
             end
@@ -107,7 +107,7 @@ classdef (Abstract) FDPDEInpainter
                     % Debug output (if required)
                     if (obj.debugShowStep || obj.debugCreateVideo) && mod(i-1, obj.debugItersPerFrame) == 0
                         imagesc(f'); axis xy; colorbar;
-                        if obj.createDemoVideo
+                        if obj.debugCreateVideo
                             frame = getframe(gcf);        
                             writeVideo(video, frame);
                         end

@@ -8,7 +8,7 @@ classdef SobolevInpainter < FDPDEInpainter
         end
         
         function f = stepFun(obj, f, mask)
-            f = -div(grad(f));
+            f = -div(grad(f));            
         end        
     end
 end
