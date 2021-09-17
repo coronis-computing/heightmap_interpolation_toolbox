@@ -8,7 +8,10 @@ classdef SobolevInpainter < FDPDEInpainter
         end
         
         function f = stepFun(obj, f, mask)
-            f = -div(grad(f));            
+            % Using central differences does not work!
+%             options.order = 2;
+%             f = div(grad(f, options), options);     
+            f = div(grad(f));
         end        
     end
 end

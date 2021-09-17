@@ -29,4 +29,12 @@ switch method
         options.MaxIters = 1e8;
         options.GridStepX = 1;
         options.GridStepY = 1;
+    case 'bertalmio'
+        options.UpdateStepSize = 0.1;
+        options.RelChangeTolerance = 1e-5;
+        options.MaxIters = 1e8;
+        options.RegularizationIters = 15;
+        options.AnisotropicDiffusionIters = 2;
+        options.GridStepX = 1;
+        options.GridStepY = 1;
 end

@@ -19,7 +19,7 @@ classdef TVInpainter < FDPDEInpainter
         end
         
         function f = stepFun(obj, f, mask)
-         	f = -div(obj.neps(grad(f)));
+         	f = div(obj.neps(grad(f)));
         end        
         
         function u = amplitude(obj, u)

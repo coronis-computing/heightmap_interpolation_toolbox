@@ -90,11 +90,20 @@ elseif strcmpi(methodStart, 'inpainting')
 %             interp = inpaintCCST(img, mask, 0);
         case 'bertalmio'
             inpainter = BertalmioInpainter(param{:});
+%             tol           = 1e-5;
+%             maxiter       = 10000;
+%             dt            = 0.01;
+%             params.M       = 40; % number of steps of the inpainting procedure;
+%             params.N       = 2;  % number of steps of the anisotropic diffusion;
+%             params.eps     = 1e-10;
+%             interp = inpainting_transport(img, mask,maxiter,tol,dt,params);
         otherwise
             error('Unknown inpainting type');
     end    
     % Inpaint!
-    interp = inpainter.inpaint(img, mask);
+%     if ~strcmpi(methodSub, 'bertalmio')
+        interp = inpainter.inpaint(img, mask);
+%     end
 else
     error(sprintf('Unknown method %s', method));
 end

@@ -55,7 +55,7 @@ classdef AMLEInpainter < FDPDEInpainter
             % CORE ITERATION
 %             f = -1*(uxx.*v(:, :, 1).^2 + uyy.*v(:, :, 2).^2 + (uxy+uyx).*(v(:,:,1).*v(:,:,2)));
             
-            f = -1*(uxx.*v(:,:,1).^2 + uyy.*v(:,:,2).^2 + (uxy+uyx).*(v(:,:, 1).*v(:,:, 2)));
+            f = (uxx.*v(:,:,1).^2 + uyy.*v(:,:,2).^2 + (uxy+uyx).*(v(:,:, 1).*v(:,:, 2)));
         end        
     end
 end

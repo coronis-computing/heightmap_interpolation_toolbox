@@ -3,13 +3,14 @@ classdef (Abstract) FDPDEInpainter
     %   Common interphase for PDE-based inpainting methods. Solves the
     %   problem using finite differences
     
-    properties
+    properties 
         relChangeTolerance = 1e-8; % Relative tolerance, stop the gradient descent when the energy descent between iterations is less than this value
         maxIters = 100000; % Maximum number of gradient descent iterations to perform
         dt = 1e-2; % Gradient descent step size
         relax = 1; % Over-relaxation parameter
         hx = 1; % Grid step size in X
         hy = 1; % Grid step size in Y
+        regEachIters = -1; % Number of evolution iterations after which we will regularize the function (if applicable, <= 0 deactivates regularization)
         % Debug options
         debugShowStep = false;
         debugCreateVideo = false;
@@ -25,6 +26,7 @@ classdef (Abstract) FDPDEInpainter
             p.KeepUnmatched=true; % WARNING: This results in the name of the parameters not being checked exactly!
             validGTZero = @(x) isscalar(x) && x >= 0;
             validGTZeroInt = @(x) isscalar(x) && x >= 0 && floor(x) == x;
+            validInt = @(x) isscalar(x) && floor(x) == x;
             validScalarLogical = @(x) isscalar(x) && islogical(x);
             validRelaxation = @(x) isscalar(x) && x >= 1 && x <= 2;
             addParameter(p, 'UpdateStepSize', 1e-2, validGTZero); 
@@ -36,6 +38,7 @@ classdef (Abstract) FDPDEInpainter
             addParameter(p, 'DebugItersPerFrame', 1000, validGTZeroInt);
             addParameter(p, 'GridStepX', 1, @isscalar);
             addParameter(p, 'GridStepY', 1, @isscalar);
+            addParameter(p, 'RegularizationIters', -1, @isscalar); 
             parse(p, varargin{:});
             
             obj.relChangeTolerance = p.Results.RelChangeTolerance;              
@@ -43,6 +46,7 @@ classdef (Abstract) FDPDEInpainter
             obj.dt = p.Results.UpdateStepSize;                        
             obj.hx = p.Results.GridStepX;
             obj.hy = p.Results.GridStepY;
+            obj.regEachIters = p.Results.RegularizationIters;
             
             obj.debugShowStep = p.Results.DebugShowStep;
             obj.debugItersPerFrame = p.Results.DebugItersPerFrame;
@@ -85,13 +89,13 @@ classdef (Abstract) FDPDEInpainter
                 f = image(:, :, c);
                 Pi = @(f)f.*(1-mask) + image(:, :, c).*mask;
                 
-%                 % Perform pre-processing?
-%                 [img, mask, obj] = preProcess(obj, img, mask);
+                % Perform pre-processing?
+                [f, mask, obj] = preProcess(obj, f, mask);
                 
                 % Gradient descent
                 for i=1:obj.maxIters
                     % Perform a step in the optimization                
-                    fnew = Pi(f - obj.dt*obj.stepFun(f)); % Minus because we assume stepFun to return the gradient, and we want to move against the gradient. Take it into account when defining a stepFun!
+                    fnew = Pi(f + obj.dt*obj.stepFun(f)); % Minus because we assume stepFun to return the gradient, and we want to move against the gradient. Take it into account when defining a stepFun!
 
                     % Over-relaxation?                
                     if obj.relax > 1
@@ -106,9 +110,9 @@ classdef (Abstract) FDPDEInpainter
 
                     % Debug output (if required)
                     if (obj.debugShowStep || obj.debugCreateVideo) && mod(i-1, obj.debugItersPerFrame) == 0
-                        imagesc(f'); axis xy; colorbar;
+                        imagesc(f); 
                         if obj.debugCreateVideo
-                            frame = getframe(gcf);        
+                            frame = getframe(gca);
                             writeVideo(video, frame);
                         end
                     end
@@ -116,6 +120,11 @@ classdef (Abstract) FDPDEInpainter
                     % Stop if "almost" no change
                     if diff < obj.relChangeTolerance
                         break;
+                    end
+                    
+                    % Regularize?
+                    if obj.regEachIters > 0 && mod(i, obj.regEachIters) == 0
+                        [f, mask, obj] = regularization(obj, f, mask);
                     end
                 end
 
@@ -126,6 +135,9 @@ classdef (Abstract) FDPDEInpainter
                     warning('Maximum number of iterations reached');
                 end
                 
+                % Perform post-processing?
+                [f, mask, obj] = postProcess(obj, f, mask);
+                
                 inpaitedImage(:, :, c) = f;
             end
             
@@ -134,7 +146,7 @@ classdef (Abstract) FDPDEInpainter
         end
                 
         function varargin = removeParentParametersFromVarargin(obj, varargin)
-            paramsToDelete = {'UpdateStepSize', 'RelChangeTolerance', 'MaxIters', 'Relaxation', 'DebugShowStep', 'DebugVideoFile', 'DebugItersPerFrame', 'GridStepX', 'GridStepY'};
+            paramsToDelete = {'UpdateStepSize', 'RelChangeTolerance', 'MaxIters', 'Relaxation', 'DebugShowStep', 'DebugVideoFile', 'DebugItersPerFrame', 'GridStepX', 'GridStepY', 'RegularizationIters'};
             varargin = deleteParamsFromVarargin(paramsToDelete, varargin);
         end
     end
@@ -146,13 +158,14 @@ classdef (Abstract) FDPDEInpainter
     
     % Optional methods that can be redefined, if some method needs them
     methods (Access = protected)
-        function preProcess(obj, img, mask)
+        function [f, mask, obj] = preProcess(obj, f, mask)
             % Pre-processing to be executed prior to the gradient descent
         end
-        function stepRegularization(obj, img, mask)
-         	% Regularization to be executed after a gradient descent step
+        function [f, mask, obj] = regularization(obj, f, mask)
+         	% Regularization to be executed after a user-defined number of
+         	% gradient descent steps
         end
-        function postProcessing(obj, img, mask)
+        function [f, mask, obj] = postProcess(obj, f, mask)
             % Post-processing to be executed after the gradient descent
         end
    end

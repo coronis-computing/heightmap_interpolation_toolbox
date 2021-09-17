@@ -29,7 +29,7 @@ classdef CCSTInpainter < FDPDEInpainter
             laplacian = conv2(f, obj.laplacianStencil, 'same');
             biharmonic = conv2(laplacian, obj.laplacianStencil, 'same');
             
-            f = (1-obj.tension).*biharmonic - obj.tension.*laplacian;
+            f = -1*((1-obj.tension).*biharmonic - obj.tension.*laplacian);
         end                
     end
 end
